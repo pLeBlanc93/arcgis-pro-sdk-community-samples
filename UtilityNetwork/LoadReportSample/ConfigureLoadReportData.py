@@ -20,21 +20,28 @@ ServicePointCategoryName = "ServicePoint"
 LoadField = "SERVICE_LOAD"
 LoadAttribute = "Customer Load"
 
+# Describe the Utility Network to find existing network attributes and categories
+describe = arcpy.Describe(utilityNetwork)
+networkAttributes = {na.name.lower() for na in describe.networkAttributes}
+networkCategories = {cat.name.lower() for cat in describe.categories}
+
 # Disable the Utility Network topology
 arcpy.AddMessage("Disabling Utility Network Topology")
 arcpy.un.DisableNetworkTopology(utilityNetwork)
 
 # Create a Network Attribute to represent Load
-arcpy.AddMessage("Creating Customer Load Network Attribute")
-arcpy.un.AddNetworkAttribute(utilityNetwork, LoadAttribute, "Long", False, None, False)
+if LoadAttribute.lower() not in networkAttributes:
+    arcpy.AddMessage("Creating Customer Load Network Attribute")
+    arcpy.un.AddNetworkAttribute(utilityNetwork, LoadAttribute, "Long", False, None, False)
 
 # Assign the network attribute to the SERVICE_LOAD field in the ElectricDistributionDevice table
 arcpy.AddMessage("Assigning Customer Load Network Attribute to Field")
 arcpy.un.SetNetworkAttribute(utilityNetwork, LoadAttribute, DomainNetwork, electricDistributionDeviceFeatureClass, LoadField )
 
 # Add a ServicePoint category
-arcpy.AddMessage("Adding ServicePoint Category")
-arcpy.un.AddNetworkCategory(utilityNetwork, ServicePointCategoryName)
+if ServicePointCategoryName.lower() not in networkCategories:
+    arcpy.AddMessage("Adding ServicePoint Category")
+    arcpy.un.AddNetworkCategory(utilityNetwork, ServicePointCategoryName)
 
 # Assign the ServicePoint category to the asset types in the ServicePoint asset group
 arcpy.AddMessage("Assigning ServicePoint Category")
